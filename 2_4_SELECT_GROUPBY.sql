@@ -11,8 +11,10 @@
 
 /*	
 	GROUP BY declares how you want records in a query result set to be grouped.
+ You define your groups by one to many columns.
+ For each group, one to many records become one record.
 	This clause supports agrregation functions such as SUM() and COUNT()
-	For GROUP BY queries to run, you need two things
+	For GROUP BY queries to run, you need two things, which we'll see in the following examples.
 */
 
 	SELECT [Color]
