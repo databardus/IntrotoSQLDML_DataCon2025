@@ -11,7 +11,7 @@
 
 /*	
 	HAVING is essentially the same as WHERE. 
-    The difference is the WHERE clause filters on individual record values, while HAVING filters on aggregate results.
+    The difference is the WHERE clause filters on individual record values, while HAVING filters on records already grouped by a GROUP BY clause.
 	To prove that, the follow two statements are logically equivalent (i.e. they return the same results).
 */
 	SELECT ProductKey, StandardCost
