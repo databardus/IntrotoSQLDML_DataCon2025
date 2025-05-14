@@ -1,12 +1,29 @@
--- T-SQL Specific Functions and Comparison with ANSI SQL
--- This script demonstrates T-SQL specific functions, their pros and cons, and equivalent ANSI SQL queries.
+/*
 
--- T-SQL Specific Function: STRING_SPLIT
+ Module 6 - T-SQL Specifics
+
+*/
+
+
+/*
+
+ Attending this training, you've likely heard reference to both 'SQL' and 'T-SQL'.
+
+How important is the T? Very, because it means it has extra function that are exclusive to SQL Serverand won't work in non-Microsoft database environments.
+
+Here, let's cover T-SQL-specific functions you should consider using, and their ANSI counterpart.
+
+*/
+
+/* 
+
+T-SQL Specific Function: STRING_SPLIT
 -- Purpose: Splits a string into rows based on a specified delimiter.
 -- Pros: Simplifies string splitting operations.
--- Cons: Not portable to other database platforms.
 
--- Example: Using STRING_SPLIT (T-SQL Specific)
+*/
+
+-- Example: T-SQL Specific
 SELECT value AS SplitValue
 FROM STRING_SPLIT('Red,Green,Blue', ',');
 
