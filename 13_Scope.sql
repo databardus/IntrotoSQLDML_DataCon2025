@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------
 
-    Module 8: Understanding Transaction (Variable Scope)
+    Module: Understanding Transaction (Variable Scope)
 
 ----------------------------------------------------------------------------*/
 /*

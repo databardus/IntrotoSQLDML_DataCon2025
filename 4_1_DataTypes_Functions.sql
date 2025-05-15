@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------
 
-    Module 3: Understanding Data Types (Basic)
+    Module: Understanding Data Types (Basic)
 
 ----------------------------------------------------------------------------*/
 /*
@@ -31,9 +31,9 @@
 
 */
 
-/*	
+/*-----------------------------------------------------	
 	Data Type 1: Number Data Types  
-*/
+-----------------------------------------------------*/
 	/*	Integers	*/
 	--int: Mimicing mathematics, Integers store non-decimal numerical values
 	SELECT 1 --This is an integer
@@ -73,9 +73,9 @@
 
 	--For a full list of arithmetic functions in SQL Server, read here: https://docs.microsoft.com/en-us/sql/t-sql/functions/mathematical-functions-transact-sql?view=sql-server-ver15
 
-/*	
+/*-----------------------------------------------	
 	Data Type 2: Character String Data Types
-*/
+-----------------------------------------------*/
 	/*	Character strings	*/
 	/*
 .		char(X): This data type is a character string of X length, where X is an integer
@@ -92,12 +92,15 @@
 	SELECT 'Test' + ' String' --Plus signs are a simple form of concatenating strings together
 	SELECT CONCAT('Test', 'String') --There is also a CONCAT() function that performs the same function for 2 to 254 character strings
 
-	--Second, you can use functions to only return specific parts of a string
+	--Second, you can use functions to split a string into multiple parts
+	SELECT STRING_SPLIT('Red,Green,Blue', ',')
+
+	--Third, you can use functions to only return specific parts of a string
 	SELECT RIGHT('Test String', 6) --Returns the first 6 characters from the right of the string
 	--The LEFT keywork performs the same function, but starts from the left side of the string
 	SELECT SUBSTRING('Test String', 1, 4) --SUBSTRING() returns a subset of the string's characters
 
-	--Third, You can get format the functions in various ways
+	--Fourth, You can get format the functions in various ways
 	SELECT UPPER('Test String') --Returns the string in all caps
 	SELECT TRIM('     Test   String      ') --Removes blank spaces from the front and end of strings
 	SELECT REPLACE('       Test        String       ', ' ', '') --The equivalent of the last statement, but it removes additional spaces in between words
@@ -108,9 +111,9 @@
 	--This is just a small sample of functions for character strings
 	--Compared to numerical values, interactions with character strings are more function based.
 
-/*	
+/*------------------------------------------------------------	
 	Data Type 3: Date/Time based Data Types
-*/
+------------------------------------------------------------*/
 	/*	Dates and Times	*/
 	/*
 		datetime: Stores both date and time
@@ -159,3 +162,128 @@
 		This covers the majority of data types that are used on a regular basis with database data.
 		For more information on SQL Server data types, consider the following reading materials: https://docs.microsoft.com/en-us/sql/t-sql/data-types/data-types-transact-sql?view=sql-server-ver15
 	*/
+
+/*-------------------------------------------------------
+    Data Conversion functions
+-------------------------------------------------------*/
+/*	
+	What if I need to change the data type for the function I am using?
+	In SQL Server, you can use the CONVERT() and CAST() functions to change the data type of a value.
+
+    Function: CONVERT
+    Purpose: Converts a value from one data type to another, with additional formatting options.
+    Pros: Provides more control over date and time formatting compared to CAST.
+
+    Function: CAST
+    Purpose: Converts a value from one data type to another.
+    Does not provide formatting options like CONVERT does.
+
+*/
+    -- Example: Using CONVERT (T-SQL Specific)
+    SELECT CONVERT(VARCHAR, GETDATE(), 101) AS FormattedDateMMDDYYYY,
+        CONVERT(VARCHAR, GETDATE(), 120) AS FormattedDateISO;
+
+    -- Example: Using CAST
+    SELECT CAST(GETDATE() AS VARCHAR) AS FormattedDate;
+	SELECT CAST('5' AS INT) AS ConvertedValue;
+
+/*---------------------------------
+	Additional Functions
+-----------------------------------*/
+/*
+	Since this module heavily focusses on functions, let's look at some additional functions
+	that will help you manipulate data in SQL Server.
+
+*/
+
+/*  
+	Conditional Logic - CASE Statements  
+	What if I need to return a different value based on a predicate?
+	CASE statements are a way to return different values based on a predicate.
+*/
+
+-- Example: Suppose I want to bucket my sales into ranges to see how many transactions fall into each range.
+-- I can use a CASE statement to do this.
+SELECT 
+	SalesOrderNumber,
+	SalesAmount,
+	CASE --Each record can only return one value, so the first predicate that is true will be returned.
+		WHEN SalesAmount < 100 THEN 'Low' --This predicate is checked first. If the record fails, the next predicate is checked.
+		WHEN SalesAmount BETWEEN 100 AND 500 THEN 'Medium'
+		WHEN SalesAmount > 500 THEN 'High'
+		ELSE 'Unknown' --If none of the above predicates are true, the ELSE statement is returned. 
+		--ELSE is optional. If you don't specify an ELSE statement, the record will return NULL
+		--if the above predicates are false.
+	END AS SalesCategory --Best to alias the CASE statement so it has a column name in the result set
+FROM 
+	dbo.FactInternetSales;
+
+
+/*
+
+	In some cases, SQL Server has simplified the same conditional logic for specific cases.
+
+*/
+
+	-- Conditional Function: COALESCE
+	-- Purpose: Returns the first non-NULL value from a list of expressions.
+	-- This can be accomplished with a CASE statement, but COALESCE is more concise.
+
+    SELECT COALESCE(NULL, NULL, 'DefaultValue') AS FirstNonNullValue;
+
+	-- The most common use case for COALESCE is when a desired value may come from multiple columns
+	-- depending on the data.
+	SELECT 
+		CustomerKey,
+		COALESCE(dc.EmailAddress, 'No Email Provided') AS EmailAddress
+	FROM 
+		dbo.DimCustomer dc
+		
+    -- CASE Statement Equivalent:
+    SELECT CASE 
+                WHEN dc.EmailAddress IS NOT NULL THEN dc.EmailAddress
+                ELSE 'No Email Provided'
+            END AS EmailAddress
+	FROM
+		dbo.DimCustomer dc
+
+
+    -- Conditional Function: GREATEST
+    -- Purpose: Returns the greatest value from a list of expressions.
+
+    -- Example: Using GREATEST (T-SQL Specific)
+    SELECT GREATEST(10, 20, 30) AS MaxValue;
+	--This example is simple, but when you realize you can pass multple columns into the function,
+	--the use case becomes more apparent.
+
+    -- Here is how you'd do the same thing with a CASE statement
+	-- It's not as clean, but it works.
+    SELECT CASE 
+               WHEN 10 >= 20 AND 10 >= 30 THEN 10
+               WHEN 20 >= 10 AND 20 >= 30 THEN 20
+               ELSE 30
+           END AS MaxValue;
+
+    -- Conditional Function: LEAST
+    -- Purpose: Returns the smallest value from a list of expressions.
+
+    -- Example: Using LEAST (T-SQL Specific)
+    SELECT LEAST(10, 20, 30) AS MinValue;
+
+    -- ANSI SQL Equivalent: Not directly available; requires CASE expressions.
+    SELECT CASE 
+               WHEN 10 <= 20 AND 10 <= 30 THEN 10
+               WHEN 20 <= 10 AND 20 <= 30 THEN 20
+               ELSE 30
+           END AS MinValue;
+
+
+/*
+
+	Module Summary
+	-Data types are important to make use of the functions available in your database environment
+	-Always check your database documentation for the specific data types available
+	-Check new version of SQL Server for new functions that may be available
+	-Functions are a key part of SQL Server, and are used to manipulate data in various ways
+
+*/

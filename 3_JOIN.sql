@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------
 
-
     Module 3: Introducing Joins
 
 ----------------------------------------------------------------------------*/
@@ -160,3 +159,13 @@
 		ON DPS.ProductCategoryKey = DPC.ProductCategoryKey --Joining to Key on the table from the previous INNER JOIN statement
 
 	--These are all INNER JOINs in this example, but any of these joins can be other forms of JOINs
+
+/*
+
+	Module Summary
+	-Table joins make use of the relationships in a database to query multiple tables at the same time
+	-Different joins determine what happens to records that do not have a match in the other table
+	-Remember Legos - Each table is a lego piece, and legos can be connected in various ways
+	-Joins are only limited by the data tables have in common.
+
+*/

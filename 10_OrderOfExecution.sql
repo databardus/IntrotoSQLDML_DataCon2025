@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------------
 
-    Module 3: Understanding Order of Execution
+    Module: Understanding Order of Execution
 
-----.------------------------------------------------------------------------*/
+----------------------------------------------------------------------------*/
 /*
 	Teacher's goals for Module 3
 	-Identify the order of execution for SELECT clauses
