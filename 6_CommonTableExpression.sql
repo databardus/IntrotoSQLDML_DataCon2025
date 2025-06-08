@@ -27,9 +27,9 @@
 -- Example: Suppose I want to find the top 10 salespeople based on total sales amount.
     WITH SalesBySalesperson AS (
         SELECT 
-            sp.SalesPersonKey AS BusinessEntityID,
-            p.FirstName,
-            p.LastName,
+            de.EmployeeKey AS BusinessEntityID,
+            de.FirstName,
+            de.LastName,
             SUM(fis.SalesAmount) AS TotalSales,
             RANK() OVER (ORDER BY SUM(fis.SalesAmount) DESC) AS SalesRank
         FROM 
@@ -37,13 +37,13 @@
         INNER JOIN 
             DimSalesTerritory st ON fis.SalesTerritoryKey = st.SalesTerritoryKey
         INNER JOIN 
-            DimSalesPerson sp ON fis.SalesPersonKey = sp.SalesPersonKey
+            DimEmployee de ON fis.SalesEmployeeKey = de.EmployeeKey
         INNER JOIN 
             DimCustomer c ON fis.CustomerKey = c.CustomerKey
-        INNER JOIN 
-            DimPerson p ON c.PersonKey = p.PersonKey
+        --INNER JOIN 
+        --    DimPerson p ON c.PersonKey = p.PersonKey
         GROUP BY 
-            sp.SalesPersonKey, p.FirstName, p.LastName
+            de.EmployeeKey, de.FirstName, de.LastName
     )
 
     -- Use the CTE in a query
@@ -61,17 +61,18 @@
         SalesRank;
 
 
+
     -- Here's another example - Recursion. 
     --In this example, we'll create a CTE to find an employee's manager
     --When finding an employee's manager alone, this could be done with a simple join.
     --However, as a CTE, this could then be used recursively to outline 
     --an employee's full hierarchy of managers, all the way to the top.
-    WITH EmployeeHierarchy AS (
+WITH EmployeeHierarchy AS (
         SELECT 
             e.EmployeeKey AS EmployeeID,
             e.FirstName AS EmployeeFirstName,
             e.LastName AS EmployeeLastName,
-            e.ManagerKey AS ManagerID
+            e.ParentEmployeeKey AS ManagerID
         FROM 
             DimEmployee e
     )

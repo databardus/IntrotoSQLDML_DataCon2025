@@ -26,18 +26,31 @@
 --First, let's write a SELECT statement to identify a record we want to create.
 SELECT 
     20778 AS EmployeeKey, 
-    NULL AS ParentEmployeeKey, 
+    NULL AS ParentEmployeeKey,
+    '1' AS EmpNatIDAltKey,
+    NULL AS ParentEmpNatIDAltKey,
+    11 AS SalesTerritoryKey,
     'Weird Al' AS FirstName, 
-    'Yankovic' AS LastName, 
+    'Yankovic' AS LastName,
+    1 AS NameStyle, 
     'Musid Legend' AS Title, 
     GETDATE() AS HireDate, 
     '1959-10-23' AS BirthDate, 
     'weirdal.yankovic@example.com' AS EmailAddress, 
-    '555-123-4567' AS Phone, 
+    '555-123-4567' AS Phone,
+    1 as SalariedFlag, 
     'M' AS MaritalStatus, 
     'M' AS Gender, 
     2 AS PayFrequency, 
-    60000 AS BaseRate;
+    60000 AS BaseRate,
+    250000 AS Salary,
+    1000 AS VacationHours,
+    1000 AS SickLeaveHours,
+    1 AS CurrentFlag,
+    1 AS SalesPersonFlag,
+    'Sales' AS DepartmentName,
+    GETDATE() AS StartDate,
+    'Current' AS Status;
 
 /*------------------------------------
     INSERT Statement
@@ -58,33 +71,60 @@ SELECT
 INSERT INTO DimEmployee -- This is the table we are inserting into
 (
     EmployeeKey, --These are the columns we are inserting into
-    ParentEmployeeKey, 
+    ParentEmployeeKey,
+    EmpNatIDAltKey,
+    ParentEmpNatIDAltKey,
+    SalesTerritoryKey, 
     FirstName, 
-    LastName, 
+    LastName,
+    NameStyle, 
     Title, 
     HireDate, 
     BirthDate, 
     EmailAddress, 
     Phone, 
+    SalariedFlag,
     MaritalStatus, 
     Gender, 
     PayFrequency, 
-    BaseRate
+    BaseRate,
+    Salary,
+    VacationHours,
+    SickLeaveHours,
+    CurrentFlag,
+    SalesPersonFlag,
+    DepartmentName,
+    StartDate,
+    Status
+
 )
 SELECT 
-    20778 AS EmployeeKey, --Note: Our Select statement columns need to match the order of the columns above
-    NULL AS ParentEmployeeKey, 
+    20778 AS EmployeeKey, 
+    NULL AS ParentEmployeeKey,
+    '1' AS EmpNatIDAltKey,
+    NULL AS ParentEmpNatIDAltKey,
+    11 AS SalesTerritoryKey,
     'Weird Al' AS FirstName, 
-    'Yankovic' AS LastName, 
+    'Yankovic' AS LastName,
+    1 AS NameStyle, 
     'Musid Legend' AS Title, 
     GETDATE() AS HireDate, 
     '1959-10-23' AS BirthDate, 
     'weirdal.yankovic@example.com' AS EmailAddress, 
-    '555-123-4567' AS Phone, 
+    '555-123-4567' AS Phone,
+    1 as SalariedFlag, 
     'M' AS MaritalStatus, 
     'M' AS Gender, 
     2 AS PayFrequency, 
-    60000 AS BaseRate;
+    60000 AS BaseRate,
+    250000 AS Salary,
+    1000 AS VacationHours,
+    1000 AS SickLeaveHours,
+    1 AS CurrentFlag,
+    1 AS SalesPersonFlag,
+    'Sales' AS DepartmentName,
+    GETDATE() AS StartDate,
+    'Current' AS Status;
     --Since we are manually specifying the values, we don't need to use any other clauses (WHERE, ORDER BY, etc.)
     --However, as long as the columns in SELECT match the columns in INSERT, 
     --we can use as many clauses as we want!
@@ -108,11 +148,13 @@ SELECT
     Title, 
     FirstName, 
     MiddleName, 
-    LastName, 
+    LastName,
+    Salary,
+    HireDate, 
     Suffix, 
     EmailPromotion
 FROM DimEmployee
-WHERE BusinessEntityID = 20778;
+WHERE EmployeeKey = 20778;
 
 /*---------------------------------------
     UPDATE Statement
@@ -120,9 +162,9 @@ WHERE BusinessEntityID = 20778;
 
 -- To update Weird Al, we replace the SELECT clause with an UPDATE clause
 UPDATE de --UPDATE defines the table we are updating, either by alias or full name
-    SET Pay = 6000000 --SET defines the columns we are updating (comma separated)
+    SET Salary = 6000000 --SET defines the columns we are updating (comma separated)
 FROM DimEmployee de
-WHERE BusinessEntityID = 20778; --WHERE defines the records we are updating
+WHERE EmployeeKey = 20778; --WHERE defines the records we are updating
 
 --Like the INSERT statement, we can use as many clauses as we want in the UPDATE statement.
 --Also like the INSERT statement, we can only modify a single table at a time.
@@ -137,7 +179,7 @@ WHERE BusinessEntityID = 20778; --WHERE defines the records we are updating
 --The syntax for a DELETE statement is simple: replace the SELECT clause with DELETE
 DELETE --If this query contains joins, you will need to specify which table you are deleting from here 
 FROM DimEmployee
-WHERE BusinessEntityID = 20778; --Bye bye, Weird Al!
+WHERE EmployeeKey = 20778; --Bye bye, Weird Al!
 --I'm deleting using the BusinessEntityID, but you can use any column in the WHERE clause
 --to identify the record(s) you want to delete.
 --Just be careful with your WHERE clause, as this will delete all records that match the criteria!

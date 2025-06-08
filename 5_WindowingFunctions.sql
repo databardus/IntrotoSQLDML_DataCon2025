@@ -25,48 +25,61 @@
 -- 4. Percentile calculations (e.g., PERCENT_RANK, NTILE).
 
 -- Example 1: ROW_NUMBER - Assigns a unique number to each row within a partition
-WITH EmployeeSalaries AS (
+WITH SalesByEmployee AS (
     SELECT 
-        EmployeeKey,
-        Title AS JobTitle,
-        SalaryRate AS Rate,
-        ROW_NUMBER() OVER (PARTITION BY Title ORDER BY SalaryRate DESC) AS RowNum
-    FROM DimEmployee
-    JOIN FactEmployeeSalary ON DimEmployee.EmployeeKey = FactEmployeeSalary.EmployeeKey
+        DE.EmployeeKey,
+        DE.FirstName,
+        DE.LastName,
+        DT.SalesTerritoryGroup,
+        TotalSales = SUM(FIS.SalesAmount),
+        ROW_NUMBER() OVER (PARTITION BY DT.SalesTerritoryGroup ORDER BY SUM(FIS.SalesAmount) DESC) AS RowNum
+    FROM DimEmployee DE
+    JOIN FactInternetSales FIS ON DE.EmployeeKey = FIS.SalesEmployeeKey
+    JOIN DimSalesTerritory DT ON DE.SalesTerritoryKey = DT.SalesTerritoryKey 
+    GROUP BY 
+        DT.SalesTerritoryGroup, 
+        DE.EmployeeKey,
+        DE.FirstName,
+        DE.LastName
 )
 SELECT * 
-FROM EmployeeSalaries
-WHERE RowNum = 1; -- Fetch the highest-paid employee for each job title
--- Explanation: ROW_NUMBER assigns a unique rank to each row within a job title partition, ordered by salary.
+FROM SalesByEmployee
+WHERE RowNum = 1; -- Fetch the employee with the most sales-- Explanation: ROW_NUMBER assigns a unique rank to each row within a job title partition, ordered by salary.
 
 -- Example 2: RANK - Assigns a rank to each row, with ties receiving the same rank
 WITH EmployeeRanks AS (
-    SELECT 
-        EmployeeKey,
-        Title AS JobTitle,
-        SalaryRate AS Rate,
-        RANK() OVER (PARTITION BY Title ORDER BY SalaryRate DESC) AS Rank
-    FROM DimEmployee
-    JOIN FactEmployeeSalary ON DimEmployee.EmployeeKey = FactEmployeeSalary.EmployeeKey
-)
+    SELECT DISTINCT 
+        DE.EmployeeKey,
+        DE.FirstName,
+        DE.LastName,
+        DT.SalesTerritoryGroup,
+        DE.Salary,
+        RANK() OVER (PARTITION BY DT.SalesTerritoryGroup ORDER BY DE.Salary DESC) AS Rank
+    FROM DimEmployee DE
+    JOIN DimSalesTerritory DT ON DE.SalesTerritoryKey = DT.SalesTerritoryKey 
+
+    )
 SELECT * 
 FROM EmployeeRanks
 WHERE Rank <= 3; -- Fetch the top 3 highest-paid employees for each job title
 -- Explanation: RANK assigns the same rank to rows with identical values, skipping ranks for ties.
 
 -- Example 3: DENSE_RANK - Similar to RANK but does not skip ranks for ties
-WITH EmployeeDenseRanks AS (
-    SELECT 
-        EmployeeKey,
-        Title AS JobTitle,
-        SalaryRate AS Rate,
-        DENSE_RANK() OVER (PARTITION BY Title ORDER BY SalaryRate DESC) AS DenseRank
-    FROM DimEmployee
-    JOIN FactEmployeeSalary ON DimEmployee.EmployeeKey = FactEmployeeSalary.EmployeeKey
-)
+WITH EmployeeRanks AS (
+    SELECT DISTINCT 
+        DE.EmployeeKey,
+        DE.FirstName,
+        DE.LastName,
+        DT.SalesTerritoryGroup,
+        DE.Salary,
+        DENSE_RANK() OVER (PARTITION BY DT.SalesTerritoryGroup ORDER BY DE.Salary DESC) AS Rank
+    FROM DimEmployee DE
+    JOIN DimSalesTerritory DT ON DE.SalesTerritoryKey = DT.SalesTerritoryKey 
+
+    )
 SELECT * 
-FROM EmployeeDenseRanks
-WHERE DenseRank <= 3; -- Fetch the top 3 highest-paid employees for each job title
+FROM EmployeeRanks
+WHERE Rank <= 3; -- Fetch the top 3 highest-paid employees for each job title
 -- Explanation: DENSE_RANK ensures no gaps in ranking when ties occur.
 
 -- Example 4: SUM - Calculate running totals
@@ -84,32 +97,63 @@ FROM RunningTotals;
 -- Explanation: SUM with the OVER clause calculates a cumulative total for each job title.
 
 -- Example 5: LAG and LEAD - Access previous and next rows
-WITH LagLeadExample AS (
-    SELECT 
-        EmployeeKey,
-        Title AS JobTitle,
-        SalaryRate AS Rate,
-        LAG(SalaryRate) OVER (PARTITION BY Title ORDER BY SalaryRate DESC) AS PreviousRate,
-        LEAD(SalaryRate) OVER (PARTITION BY Title ORDER BY SalaryRate DESC) AS NextRate
-    FROM DimEmployee
-    JOIN FactEmployeeSalary ON DimEmployee.EmployeeKey = FactEmployeeSalary.EmployeeKey
+WITH AllSalaries AS
+(
+SELECT TOP (1000) [EmployeeKey]
+      ,[ParentEmployeeKey]
+      ,[EmpNatIDAltKey]
+      ,[ParentEmpNatIDAltKey]
+      ,[SalesTerritoryKey]
+      ,[FirstName]
+      ,[LastName]
+      ,[MiddleName]
+      ,[NameStyle]
+      ,[Title]
+      ,[HireDate]
+      ,[BirthDate]
+      ,[LoginID]
+      ,[EmailAddress]
+      ,[Phone]
+      ,[MaritalStatus]
+      ,[EmergencyContactName]
+      ,[EmergencyContactPhone]
+      ,[SalariedFlag]
+      ,[Gender]
+      ,[PayFrequency]
+      ,[BaseRate]
+      ,[VacationHours]
+      ,[SickLeaveHours]
+      ,[CurrentFlag]
+      ,[SalesPersonFlag]
+      ,[DepartmentName]
+      ,[StartDate]
+      ,[EndDate]
+      ,[Status]
+      ,[EmployeePhoto]
+      ,[Salary]
+      ,LAG(Salary) OVER (PARTITION BY [EmpNatIDAltKey] ORDER BY EffectiveDate) AS PreviousSalary
+      ,LEAD(Salary) OVER (PARTITION BY [EmpNatIDAltKey] ORDER BY EffectiveDate) AS NextSalary
+      ,[EffectiveDate]
+      ,[ExpirationDate]
+  FROM [dbo].[DimEmployee]
+  WHERE SalariedFlag = 1
 )
-SELECT * 
-FROM LagLeadExample;
+SELECT *, SalaryIncrease = (ABS(Salary - PreviousSalary) / PreviousSalary) * 100
+FROM AllSalaries
+WHERE Status = 'Current'
 -- Explanation: LAG retrieves the previous row's value, and LEAD retrieves the next row's value.
 
 -- Example 6: NTILE - Divide rows into a specified number of groups
-WITH NTileExample AS (
-    SELECT 
-        EmployeeKey,
-        Title AS JobTitle,
-        SalaryRate AS Rate,
-        NTILE(4) OVER (PARTITION BY Title ORDER BY SalaryRate DESC) AS Quartile
-    FROM DimEmployee
-    JOIN FactEmployeeSalary ON DimEmployee.EmployeeKey = FactEmployeeSalary.EmployeeKey
-)
-SELECT * 
-FROM NTileExample;
+SELECT 
+    EmployeeKey,
+    FirstName,
+    LastName,
+    Salary,
+    NTILE(4) OVER (ORDER BY Salary DESC) AS SalaryQuartile
+FROM DimEmployee
+WHERE Salary IS NOT NULL
+  AND Status = 'Current'
+ORDER BY SalaryQuartile, Salary DESC;
 -- Explanation: NTILE divides the rows into 4 equal groups (quartiles) based on salary within each job title.
 
 -- Example 7: LAG

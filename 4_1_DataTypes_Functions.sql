@@ -93,7 +93,15 @@
 	SELECT CONCAT('Test', 'String') --There is also a CONCAT() function that performs the same function for 2 to 254 character strings
 
 	--Second, you can use functions to split a string into multiple parts
-	SELECT STRING_SPLIT('Red,Green,Blue', ',')
+	SELECT 
+		DateKey,
+		CustomerKey,
+		value AS IndividualResponse -- Individual response extracted from the comma-separated values
+	FROM 
+		dbo.FactSurveyResponseAggregated
+	CROSS APPLY  -- CROSS APPLY allows you to apply a function to each row in the table
+		STRING_SPLIT(EnglishProductSubcategoryName, ',') -- Splits the SurveyResponse column into individual values
+	ORDER BY CustomerKey, DateKey;
 
 	--Third, you can use functions to only return specific parts of a string
 	SELECT RIGHT('Test String', 6) --Returns the first 6 characters from the right of the string
