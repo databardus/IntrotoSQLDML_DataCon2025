@@ -93,6 +93,7 @@
 	SELECT CONCAT('Test', 'String') --There is also a CONCAT() function that performs the same function for 2 to 254 character strings
 
 	--Second, you can use functions to split a string into multiple parts
+	--STRING_SPLIT is post SQL Server 2016, and allows you to split a string into multiple parts based on a delimiter.
 	SELECT 
 		DateKey,
 		CustomerKey,
@@ -112,6 +113,8 @@
 	SELECT UPPER('Test String') --Returns the string in all caps
 	SELECT TRIM('     Test   String      ') --Removes blank spaces from the front and end of strings
 	SELECT REPLACE('       Test        String       ', ' ', '') --The equivalent of the last statement, but it removes additional spaces in between words
+	--REPLACE() can also be used to replace specific characters in a string with other characters.
+	--REPLACE() takes 3 arguments: The string to modify, the character to replace, and the character to replace it with.
 
 	--Finally, there are some functions that can return specific properties of a 
 	SELECT LEN('Test String') --Returns the number of characters in the string
@@ -190,6 +193,10 @@
     -- Example: Using CONVERT (T-SQL Specific)
     SELECT CONVERT(VARCHAR, GETDATE(), 101) AS FormattedDateMMDDYYYY,
         CONVERT(VARCHAR, GETDATE(), 120) AS FormattedDateISO;
+	--To test with real data, use OrderDate from FactInternetSales
+	SELECT CONVERT(VARCHAR, OrderDate, 101) AS FormattedDateMMDDYYYY,
+	       CONVERT(VARCHAR, OrderDate, 120) AS FormattedDateISO
+	FROM dbo.FactInternetSales;
 
     -- Example: Using CAST
     SELECT CAST(GETDATE() AS VARCHAR) AS FormattedDate;

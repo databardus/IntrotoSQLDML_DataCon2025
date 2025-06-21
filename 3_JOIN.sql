@@ -29,6 +29,39 @@
 	How do JOINS work? An example would be the easiest way to explain.
 */
 
+	--Let's start with a simple example of a CROSS JOIN, which is not commonly used in practice.
+	--Hoiwever, it is a good way to show how joins work.
+	SELECT *
+	FROM DimProduct AS A --Becomes the 'Left' table of our join
+	CROSS JOIN DimProductSubcategory AS B --Becomes the 'Right' table of our join
+	--Notice that we do not have an ON clause in a CROSS JOIN. 
+	--This is because every record in the first table is combined with every record in the second table.
+
+	--Alright, this isn't very useful. Can we narrow the results down to something more useful?
+	--Let's take a step to reduce our results using a FULL JOIN.
+	SELECT *
+	FROM DimProduct AS A --Becomes the 'Left' table of our join
+	FULL JOIN DimProductSubcategory AS B --Becomes the 'Right' table of our join
+		ON A.ProductSubcategoryKey = B.ProductSubcategoryKey
+	--WHERE A.ProductKey IS NOT NULL OR B.ProductSubcategoryKey IS NOT NULL
+	ORDER BY A.ProductKey
+
+	--The above query is a FULL JOIN, which means we will return all records from both tables.
+	--The next join that is more specific is a LEFT JOIN
+	SELECT *
+	FROM DimProduct AS A --Becomes the 'Left' table of our join
+	LEFT JOIN DimProductSubcategory AS B --Becomes the 'Right' table of our join
+		ON A.ProductSubcategoryKey = B.ProductSubcategoryKey
+	--WHERE A.ProductKey IS NOT NULL OR B.ProductSubcategoryKey IS NOT NULL
+	ORDER BY A.ProductKey
+
+	--Then finally, the most common join is an INNER JOIN, which only returns records that have a match in both tables.
+	SELECT *
+	FROM DimProduct AS A --Becomes the 'Left' table of our join
+	INNER JOIN DimProductSubcategory AS B --Becomes the 'Right' table of our join
+		ON A.ProductSubcategoryKey = B.ProductSubcategoryKey
+	--WHERE A.ProductKey IS NOT NULL OR B.ProductSubcategoryKey IS NOT NULL
+	ORDER BY A.ProductKey
 
 	--This query will be used to explain Joins, as well as a few other concepts.
 	SELECT DP.EnglishProductName, FIS.ProductKey, FIS.OrderDate, FIS.SalesAmount
@@ -121,6 +154,10 @@
 	--1 record for each record in FactInternetSales that does not have a matching record in DimProduct (Product columns are NULL)
 	--1 record for each record in DimProduct that does not have a matching record in FactInternetSales (InternetSales columns are NULL)
 	--1 record for each record in FactInternetSales that has a matching DimProduct record (All column can return values)
+
+	--The last join is CROSS JOIN, which is not commonly used in practice.
+	--A CROSS JOIN is a Cartesian product of the two tables, meaning every record in the first table is combined with every record in the second table.
+
 
 	--Which join do you use when? It depends on your reporting scenarios.
 	--Take this scenario, for example.
