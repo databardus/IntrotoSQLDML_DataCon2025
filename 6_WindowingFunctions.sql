@@ -82,21 +82,8 @@ FROM EmployeeRanks
 WHERE Rank <= 3; -- Fetch the top 3 highest-paid employees for each job title
 -- Explanation: DENSE_RANK ensures no gaps in ranking when ties occur.
 
--- Example 4: SUM - Calculate running totals
-WITH RunningTotals AS (
-    SELECT 
-        EmployeeKey,
-        Title AS JobTitle,
-        SalaryRate AS Rate,
-        SUM(SalaryRate) OVER (PARTITION BY Title ORDER BY SalaryRate DESC) AS RunningTotal
-    FROM DimEmployee
-    JOIN FactEmployeeSalary ON DimEmployee.EmployeeKey = FactEmployeeSalary.EmployeeKey
-)
-SELECT * 
-FROM RunningTotals;
--- Explanation: SUM with the OVER clause calculates a cumulative total for each job title.
 
--- Example 5: LAG and LEAD - Access previous and next rows
+-- Example 4: LAG and LEAD - Access previous and next rows
 WITH AllSalaries AS
 (
 SELECT TOP (1000) [EmployeeKey]
@@ -143,32 +130,17 @@ FROM AllSalaries
 WHERE Status = 'Current'
 -- Explanation: LAG retrieves the previous row's value, and LEAD retrieves the next row's value.
 
--- Example 6: NTILE - Divide rows into a specified number of groups
+-- Example 5: NTILE - Divide rows into a specified number of groups
 SELECT 
-    EmployeeKey,
+    CustomerKey,
     FirstName,
     LastName,
-    Salary,
-    NTILE(4) OVER (ORDER BY Salary DESC) AS SalaryQuartile
-FROM DimEmployee
-WHERE Salary IS NOT NULL
-  AND Status = 'Current'
-ORDER BY SalaryQuartile, Salary DESC;
+    YearlyIncome,
+    NTILE(4) OVER (ORDER BY YearlyIncome DESC) AS IncomeQuartile
+FROM DimCustomer
+WHERE YearlyIncome IS NOT NULL
+ORDER BY IncomeQuartile, YearlyIncome DESC;
 -- Explanation: NTILE divides the rows into 4 equal groups (quartiles) based on salary within each job title.
-
--- Example 7: LAG
--- Purpose: Accesses data from a previous row in the same result set.
-
-SELECT SalesOrderNumber, OrderDate, 
-        LAG(OrderDate) OVER (PARTITION BY CustomerKey ORDER BY OrderDate) AS PreviousOrderDate
-FROM FactInternetSales;
-
--- Example 8: LEAD
--- Purpose: Accesses data from a subsequent row in the same result set.
-
-SELECT SalesOrderNumber, OrderDate, 
-        LEAD(OrderDate) OVER (PARTITION BY CustomerKey ORDER BY OrderDate) AS NextOrderDate
-FROM FactInternetSales;
 
 /*
 

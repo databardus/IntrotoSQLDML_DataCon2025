@@ -37,61 +37,25 @@
 	--Notice that we do not have an ON clause in a CROSS JOIN. 
 	--This is because every record in the first table is combined with every record in the second table.
 
-	--Alright, this isn't very useful. Can we narrow the results down to something more useful?
-	--Let's take a step to reduce our results using a FULL JOIN.
-	SELECT *
-	FROM DimProduct AS A --Becomes the 'Left' table of our join
-	FULL JOIN DimProductSubcategory AS B --Becomes the 'Right' table of our join
-		ON A.ProductSubcategoryKey = B.ProductSubcategoryKey
-	--WHERE A.ProductKey IS NOT NULL OR B.ProductSubcategoryKey IS NOT NULL
-	ORDER BY A.ProductKey
-
-	--The above query is a FULL JOIN, which means we will return all records from both tables.
-	--The next join that is more specific is a LEFT JOIN
-	SELECT *
-	FROM DimProduct AS A --Becomes the 'Left' table of our join
-	LEFT JOIN DimProductSubcategory AS B --Becomes the 'Right' table of our join
-		ON A.ProductSubcategoryKey = B.ProductSubcategoryKey
-	--WHERE A.ProductKey IS NOT NULL OR B.ProductSubcategoryKey IS NOT NULL
-	ORDER BY A.ProductKey
-
-	--Then finally, the most common join is an INNER JOIN, which only returns records that have a match in both tables.
-	SELECT *
-	FROM DimProduct AS A --Becomes the 'Left' table of our join
-	INNER JOIN DimProductSubcategory AS B --Becomes the 'Right' table of our join
-		ON A.ProductSubcategoryKey = B.ProductSubcategoryKey
-	--WHERE A.ProductKey IS NOT NULL OR B.ProductSubcategoryKey IS NOT NULL
-	ORDER BY A.ProductKey
-
-	--This query will be used to explain Joins, as well as a few other concepts.
-	SELECT DP.EnglishProductName, FIS.ProductKey, FIS.OrderDate, FIS.SalesAmount
-	FROM dbo.FactInternetSales FIS
-	INNER JOIN dbo.DimProduct DP
-		ON FIS.ProductKey = DP.ProductKey
-	WHERE FIS.ProductKey > 300
-	--GROUP BY ProductKey, OrderDate
-	--HAVING SUM(SalesAmount) > 10000
-	ORDER BY FIS.ProductKey
-
-	----SELECT *--FIS.*, DP.*
-	----FROM dbo.FactInternetSales FIS
-	----INNER JOIN dbo.DimProduct DP
-	----	ON FIS.ProductKey = DP.ProductKey
-
 /*	--JOIN syntax
 	
 	JOIN criteria is two-part. 
 	--First, define the table we're joining to and the join form. 
 	--Second, define a predicate identifying how we get a successful join into the table defined in the join
-	--Think of it as a WHERE clause, but successful/failed joins determine whether we find a record to join to instead of whether a record is filtered out (though in the case of inner joins, both occur).
+	--	NOTE: The second clause applies to every join except CROSS
+	--Think of a JOIN as a WHERE clause, but successful/failed joins determine whether we find a record to join to instead of whether a record is filtered out (though in the case of inner joins, both occur).
 
-    JOIN can take one of 4 forms, with 2 forms being the most frequently used. These forms exists to handle the various ways we may want to join tables.
-    To understand the variations of JOINs, Imagine a Venn diagram with two intersecting circles, where each circle contains all records from a table (Table A on the left, Table B on the right). For a given record in these tables, this gives you 4 possible outcomes of where the record exists. These outcomes define the 4 forms.
-    The 4 forms are:
-    -Inner Join: A record exists in both Table A and Table B
+    JOIN can take one of 5 forms, with 2 forms being the most frequently used. These forms exists to handle the various ways we may want to join tables.
+    To understand the variations of JOINs, Imagine a Venn diagram with two Lego bricks, 
+	where each brick contains all records from a table (Table A on the left, Table B on the right). 
+	For a given record in these tables, this gives you 5 possible outcomes of where the record exists. 
+	These outcomes define the 5 forms.
+    The 5 forms are:
+	-Cross Join: Every combination of records from A and B, regardless of logical commonality.
+    -Full Outer Join: A record is either in Table A, Table B, or Both. No matter what, we want records from both table
     -Left Outer Join: A record is in Table A, but not Table B
     -Right Outer Join: A record is in Table B, but not Table A
-    -Full Outer Join: A record is either in Table A, Table B, or Both. No matter what, we want records from both table
+    -Inner Join: A record exists in both Table A and Table B
 
 	--Things we can observe
 	--First, what columns can be returned by a successful join?
@@ -113,7 +77,76 @@
 */
 
 	--So how would other joins differ?
-	--Let's test out a LEFT JOIN (Note: This model enforces high quality data rules, which means most left joins won't differ. We're adding in an extra clause to show what a left join looks like, but it's not that effective)
+
+	--Alright, so CROSS JOINS aren't very useful because the matching records can have nothing in common.
+	--Can we narrow the results down to something more useful?
+	--Let's take a step to reduce our results using a FULL JOIN.
+	SELECT *
+	FROM DimProduct AS A --Becomes the 'Left' table of our join
+	FULL JOIN DimProductSubcategory AS B --Becomes the 'Right' table of our join
+		ON A.ProductSubcategoryKey = B.ProductSubcategoryKey
+	ORDER BY A.ProductKey
+
+	--The above query is a FULL JOIN, which means we will return all records from both tables
+	--at least once, regardless of whether the predicate succeeds.
+	--The next join that is more specific is a LEFT JOIN.
+	--A LEFT JOIN preserves all records from the 'left' table, but removes records from the right that have no match.
+	SELECT *
+	FROM DimProduct AS A --Becomes the 'Left' table of our join
+	LEFT JOIN DimProductSubcategory AS B --Becomes the 'Right' table of our join
+		ON A.ProductSubcategoryKey = B.ProductSubcategoryKey
+	ORDER BY A.ProductKey
+
+	--A RIGHT JOIN accomplishes the same thing as a LEFT JOIN, but the roles of the two tables are reversed.
+
+	--Then finally, the most common join is an INNER JOIN, which only returns records that have a match in both tables.
+	SELECT *
+	FROM DimProduct AS A --Becomes the 'Left' table of our join
+	INNER JOIN DimProductSubcategory AS B --Becomes the 'Right' table of our join
+		ON A.ProductSubcategoryKey = B.ProductSubcategoryKey
+	--WHERE A.ProductKey IS NOT NULL OR B.ProductSubcategoryKey IS NOT NULL
+	ORDER BY A.ProductKey
+
+	/*
+		What if I want to join to more than one table?
+		Define multiple join clauses with their own predicates
+		Think of it as joining two tables first, then another table after the first two join.
+		While functionally it all happens at the same time, 
+		you can build joins to tens of hundreds of tables
+		by joining them one at a time
+	*/
+	SELECT *
+	FROM DimProduct AS A
+	LEFT JOIN DimProductSubcategory AS B
+		ON A.ProductSubcategoryKey = B.ProductSubcategoryKey
+	--Joining another table to itself
+	LEFT JOIN DimProductCategory AS C
+		ON B.ProductCategoryKey = C.ProductCategoryKey
+
+	--Can you join at table to itself? Yes, you can!
+	SELECT 
+		eh.EmployeeID,
+		eh.EmployeeFirstName,
+		eh.EmployeeLastName,
+		m.FirstName AS ManagerFirstName,
+		m.LastName AS ManagerLastName
+	FROM 
+		DimEmployee eh
+	LEFT JOIN 
+		DimEmployee m ON eh.ManagerID = m.EmployeeKey
+
+
+/* Here are additional examples using different tables */
+
+	--This query will be used to explain Joins, as well as a few other concepts.
+	SELECT DP.EnglishProductName, FIS.ProductKey, FIS.OrderDate, FIS.SalesAmount
+	FROM dbo.FactInternetSales FIS
+	INNER JOIN dbo.DimProduct DP
+		ON FIS.ProductKey = DP.ProductKey
+	WHERE FIS.ProductKey > 300
+	--GROUP BY ProductKey, OrderDate
+	--HAVING SUM(SalesAmount) > 10000
+	ORDER BY FIS.ProductKey
 
 	SELECT *--FIS.*, DR.*
 	FROM dbo.FactInternetSales FIS
@@ -154,9 +187,6 @@
 	--1 record for each record in FactInternetSales that does not have a matching record in DimProduct (Product columns are NULL)
 	--1 record for each record in DimProduct that does not have a matching record in FactInternetSales (InternetSales columns are NULL)
 	--1 record for each record in FactInternetSales that has a matching DimProduct record (All column can return values)
-
-	--The last join is CROSS JOIN, which is not commonly used in practice.
-	--A CROSS JOIN is a Cartesian product of the two tables, meaning every record in the first table is combined with every record in the second table.
 
 
 	--Which join do you use when? It depends on your reporting scenarios.

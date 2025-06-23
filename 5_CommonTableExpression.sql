@@ -24,14 +24,14 @@
     Step 2: Write the query that references the CTE.
 */
 
--- Example: Suppose I want to find the top 10 salespeople based on total sales amount.
+-- Example: Suppose I want to find the top X salespeople, organized by Sales Territory, based on total sales amount.
     WITH SalesBySalesperson AS (
         SELECT 
             de.EmployeeKey AS BusinessEntityID,
             de.FirstName,
             de.LastName,
-            SUM(fis.SalesAmount) AS TotalSales,
-            RANK() OVER (ORDER BY SUM(fis.SalesAmount) DESC) AS SalesRank
+            st.SalesTerritoryGroup,
+            SUM(fis.SalesAmount) AS TotalSales
         FROM 
             FactInternetSales fis
         INNER JOIN 
@@ -40,8 +40,6 @@
             DimEmployee de ON fis.SalesEmployeeKey = de.EmployeeKey
         INNER JOIN 
             DimCustomer c ON fis.CustomerKey = c.CustomerKey
-        --INNER JOIN 
-        --    DimPerson p ON c.PersonKey = p.PersonKey
         GROUP BY 
             de.EmployeeKey, de.FirstName, de.LastName
     )
@@ -51,23 +49,19 @@
         BusinessEntityID,
         FirstName,
         LastName,
-        TotalSales,
-        SalesRank
+        TotalSales
     FROM 
         SalesBySalesperson --This is the CTE we just defined. We can use it like a table!
-    WHERE 
-        SalesRank <= 10 -- Filter for top 10 salespeople
     ORDER BY 
-        SalesRank;
+        TotalSales DESC;
 
-
-
-    -- Here's another example - Recursion. 
+    -- Here's another example. 
     --In this example, we'll create a CTE to find an employee's manager
     --When finding an employee's manager alone, this could be done with a simple join.
-    --However, as a CTE, this could then be used recursively to outline 
-    --an employee's full hierarchy of managers, all the way to the top.
-WITH EmployeeHierarchy AS (
+    --However, as a CTE, this could then be used in another CTE to get the manager's manager.
+    --In more complex scenarios, CTEs can be recursively defined to outline 
+    --an employee's full hierarchy of managers in one record, all the way to the top.
+WITH Employee AS (
         SELECT 
             e.EmployeeKey AS EmployeeID,
             e.FirstName AS EmployeeFirstName,
@@ -76,18 +70,30 @@ WITH EmployeeHierarchy AS (
         FROM 
             DimEmployee e
     )
+    , EmployeeManager AS (
     SELECT 
         eh.EmployeeID,
         eh.EmployeeFirstName,
         eh.EmployeeLastName,
         m.FirstName AS ManagerFirstName,
-        m.LastName AS ManagerLastName
+        m.LastName AS ManagerLastName,
+        m.ParentEmployeeKey AS SecondManagerID
     FROM 
         EmployeeHierarchy eh
     LEFT JOIN 
         DimEmployee m ON eh.ManagerID = m.EmployeeKey
         --Notice how we're joining from a CTE of DimEmployee to the DimEmployee table again.
+    )
+    --We will showcase another round of reference to simulate the first round of recursion
+    SELECT eh.*,
+           m.FirstName AS SecondManagerFirstName,
+           m.LastName AS SecondManagerLastName
+    FROM EmployeeManager eh
+    LEFT JOIN 
+        DimEmployee m ON eh.SecondManagerID = m.EmployeeKey
 
+    --There are more practical reasons to use CTEs, but this module explains the general function.
+    --Future modules will make use of CTEs more regularly.
 /*
 
     Module Summary
