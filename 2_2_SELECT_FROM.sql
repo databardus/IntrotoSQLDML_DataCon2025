@@ -20,6 +20,37 @@
 	SELECT * --An asterisk in a SELECT clause means return all columns from a defined table
 	FROM [DimProduct]
 
+	--Here is the same logical query, identifying the columns from DimProduct
+	SELECT
+		ProductKey,
+		ProductAlternateKey,
+		ProductSubcategoryKey,
+		WeightUnitMeasureCode,
+		SizeUnitMeasureCode,
+		EnglishProductName,
+		StandardCost,
+		FinishedGoodsFlag,
+		Color,
+		SafetyStockLevel,
+		ReorderPoint,
+		ListPrice,
+		Size,
+		SizeRange,
+		Weight,
+		DaysToManufacture,
+		ProductLine,
+		DealerPrice,
+		Class,
+		Style,
+		ModelName,
+		EnglishDescription,
+		StartDate,
+		EndDate,
+		Status,
+		tags,
+		RowNum
+	FROM DimProduct dp
+
 /*
 		In the above statement, we just named the table. This only works if the table is the only table with that name in the database
 		If there are multiple tables with the same name, then you have to 'qualify' the table you are trying to access.

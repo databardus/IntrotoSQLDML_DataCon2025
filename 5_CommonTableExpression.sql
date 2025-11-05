@@ -79,7 +79,7 @@ WITH Employee AS (
         m.LastName AS ManagerLastName,
         m.ParentEmployeeKey AS SecondManagerID
     FROM 
-        EmployeeHierarchy eh
+        Employee eh
     LEFT JOIN 
         DimEmployee m ON eh.ManagerID = m.EmployeeKey
         --Notice how we're joining from a CTE of DimEmployee to the DimEmployee table again.

@@ -115,11 +115,19 @@
 		you can build joins to tens of hundreds of tables
 		by joining them one at a time
 	*/
-	SELECT *
+	SELECT
+		A.ProductKey,
+		A.ProductSubcategoryKey AS AProductSubcategoryKey,
+		B.ProductSubcategoryKey AS BProductSubcategoryKey,
+		B.ProductCategoryKey AS BProductCategoryKey,
+		C.ProductCategoryKey AS CProductCategoryKey,
+		A.EnglishProductName,
+		B.ProductSubcategoryName,
+		C.ProductCategoryName
 	FROM DimProduct AS A
 	LEFT JOIN DimProductSubcategory AS B
 		ON A.ProductSubcategoryKey = B.ProductSubcategoryKey
-	--Joining another table to itself
+	--Joining another table to what we have
 	LEFT JOIN DimProductCategory AS C
 		ON B.ProductCategoryKey = C.ProductCategoryKey
 
@@ -226,6 +234,49 @@
 		ON DPS.ProductCategoryKey = DPC.ProductCategoryKey --Joining to Key on the table from the previous INNER JOIN statement
 
 	--These are all INNER JOINs in this example, but any of these joins can be other forms of JOINs
+
+	--One important note on formatting. Aliasing your tables in join is important to keep your code clean
+	--Let's revisit a query earlier that returns data from 3 tables
+	SELECT
+		A.ProductKey,
+		A.ProductSubcategoryKey AS AProductSubcategoryKey,
+		B.ProductSubcategoryKey AS BProductSubcategoryKey,
+		B.ProductCategoryKey AS BProductCategoryKey,
+		C.ProductCategoryKey AS CProductCategoryKey,
+		A.EnglishProductName,
+		B.ProductSubcategoryName,
+		C.ProductCategoryName
+	FROM DimProduct AS A
+	LEFT JOIN DimProductSubcategory AS B
+		ON A.ProductSubcategoryKey = B.ProductSubcategoryKey
+	LEFT JOIN DimProductCategory AS C
+		ON B.ProductCategoryKey = C.ProductCategoryKey
+
+	/*
+		Notice how the column names exist in multiple tables.
+		For this query to work, I have to reference something that identifies which table it
+		is coming from.
+		I do that with the prefix, which references the table alias.
+		The table alias keeps the code cleaner.
+
+		To prove the point, here's the same query that does not use table aliases.
+	*/
+
+	-- Created by Copilot in SSMS - review carefully before executing
+SELECT
+  DimProduct.ProductKey,
+  DimProduct.ProductSubcategoryKey AS AProductSubcategoryKey,
+  DimProductSubcategory.ProductSubcategoryKey AS BProductSubcategoryKey,
+  DimProductSubcategory.ProductCategoryKey AS BProductCategoryKey,
+  DimProductCategory.ProductCategoryKey AS CProductCategoryKey,
+  DimProduct.EnglishProductName,
+  DimProductSubcategory.ProductSubcategoryName,
+  DimProductCategory.ProductCategoryName
+FROM DimProduct
+LEFT JOIN DimProductSubcategory
+  ON DimProduct.ProductSubcategoryKey = DimProductSubcategory.ProductSubcategoryKey
+LEFT JOIN DimProductCategory
+  ON DimProductSubcategory.ProductCategoryKey = DimProductCategory.ProductCategoryKey;
 
 /*
 

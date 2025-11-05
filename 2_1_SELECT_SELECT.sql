@@ -53,7 +53,7 @@
     SELECT 
 		1+1,    --You can do arithmetic and return it as a value
 		25/5+2, --Order of operations functions the same way as in mathematics
-		ABS(-1) --SQL Also has some functions built in, such as absolute value. We'll cover more about functions later in the training
+		ABS(-1), --SQL Also has some functions built in, such as absolute value. We'll cover more about functions later in the training
 		'Test'  --SQL uses single quotes to define character strings 
 	
     /*
