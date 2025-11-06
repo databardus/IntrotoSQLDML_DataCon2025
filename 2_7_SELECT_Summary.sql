@@ -11,12 +11,16 @@
 */
 
 	--When you put all of the clauses together, a SQL query looks like this.
-	SELECT ProductKey, OrderDate, SUM(SalesAmount)
-	FROM dbo.FactInternetSales
-	WHERE ProductKey > 300
-	GROUP BY ProductKey, OrderDate
-	HAVING SUM(SalesAmount) > 10000
-	ORDER BY ProductKey
+	SELECT dst.SalesTerritoryRegion, dp.EnglishProductName, fis.OrderDate, SUM(fis.SalesAmount)
+	FROM dbo.FactInternetSales fis
+	LEFT JOIN dbo.DimSalesTerritory dst
+		ON fis.SalesTerritoryKey = dst.SalesTerritoryKey
+	LEFT JOIN dbo.DimProduct dp
+		ON fis.ProductKey = dp.ProductKey
+	WHERE dst.SalesTerritoryRegion = 'Australia'
+	GROUP BY dst.SalesTerritoryRegion, dp.EnglishProductName, fis.OrderDate
+	HAVING SUM(fis.SalesAmount) > 10000
+	ORDER BY fis.OrderDate, dp.EnglishProductName
 	--Note that clauses in a SELECT statement need to be defined in this order. If you rearrange the clauses (for example, defining FROM before SELECT), your query will fail.
 
 /*
@@ -27,5 +31,7 @@
 
 	This will likely put you at the end of the first 4 hours of training.
 	Depending on timing and if a model is available, it might be worthwhile to have trainees take time to experiment with 
+
+	What's that JOIN thing that shows up between FROM and WHERE? We'll cover that in Section 3.
 
 */
